@@ -11,11 +11,7 @@ import json
 import threading
 import tkinter.simpledialog
 import winreg
-import tkinter.ttk as ttk
-from tkinter.ttk import Button
-
 from PIL import Image, ImageTk
-from tensorboard.plugins.image.summary import image
 
 
 # Debug Func
@@ -52,7 +48,7 @@ class Main:
         self.get_filelist()
         self.get_wallpaper_info()
         self.root = tk.Tk()  # Create Main Window
-        self.root.geometry("920x732")  # Set Window's Size
+        self.root.geometry("940x732")  # Set Window's Size
         self.root.title("RePKG UI")  # Set Window's title
         self.root.resizable(False, False)
         self.check_file_and_path()  # Check If file exits
@@ -69,14 +65,15 @@ class Main:
         """
         Main UI of the application
         """
-        self.main_frame = tk.Frame(self.root,height=732, width=900)
-        self.main_canvas = tkinter.Canvas(self.main_frame)
-        self.main_canvas.create_window((0, 0), anchor="nw", window=self.main_frame)
-        self.main_canvas.config(highlightthickness=0)
+        self.main_canvas = tk.Canvas(self.main_frame, width=920, height=732)
+        self.main_canvas.configure(highlightthickness=0)
+        self.main_canvas.pack(fill='both', expand=True)
 
-        self.scrollbar = tk.Scrollbar(self.main_canvas, orient=tk.VERTICAL, command=self.main_canvas.yview)
+        self.scrollbar = tk.Scrollbar(
+            self.main_canvas, orient=tk.VERTICAL)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.main_canvas.config(yscrollcommand=self.scrollbar.set)
+        self.main_canvas.configure(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.configure(command=self.main_canvas.yview)
 
 
     def place_labels(self):
