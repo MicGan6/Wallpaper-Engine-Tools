@@ -34,11 +34,14 @@ def debug(mode, name, log):
 class Main:
     def __init__(self):
         # Create Some Vars, they will be use later in the functions
+        self.main_frame = None
+        self.scrollbar = None
         self.WallPaper_info = None
         self.jsonlist = None
         self.button_start = None
         self.entry_PKGfile_path = None
         self.text_file_path = None
+        self.main_canvas = None
         self.PIL_img_Tk_list = []
         self.labels_wallpapers_pic = [] # The labels of the pictures
         self.work_path = os.getcwd()  # Get Work Path
@@ -54,8 +57,9 @@ class Main:
         self.root.resizable(False, False)
         self.check_file_and_path()  # Check If file exits
         # Load UI
-        self.place_labels()
         self.main_ui()
+        self.place_labels()
+
         self.root.mainloop()  # Show the Window
 
     def __str__(self):
@@ -65,6 +69,15 @@ class Main:
         """
         Main UI of the application
         """
+        self.main_frame = tk.Frame(self.root,height=732, width=900)
+        self.main_canvas = tkinter.Canvas(self.main_frame)
+        self.main_canvas.create_window((0, 0), anchor="nw", window=self.main_frame)
+        self.main_canvas.config(highlightthickness=0)
+
+        self.scrollbar = tk.Scrollbar(self.main_canvas, orient=tk.VERTICAL, command=self.main_canvas.yview)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.main_canvas.config(yscrollcommand=self.scrollbar.set)
+
 
     def place_labels(self):
         """
@@ -80,7 +93,7 @@ class Main:
             PIL_img = Image.open(Wallpaper_info_v.get('Wallpaper_preview_file')) # Open the preview pic
             PIL_Tk_img = ImageTk.PhotoImage(PIL_img.resize((100,100))) # Use ImageTk to show the pic
             self.PIL_img_Tk_list.append(PIL_Tk_img)
-            Wallpaper_pic = tk.Button(self.root, image=PIL_Tk_img)  # Create the label
+            Wallpaper_pic = tk.Button(self.main_canvas, image=PIL_Tk_img)  # Create the label
             Wallpaper_pic.place(x=img_x,y=img_y)
             self.labels_wallpapers_pic.append(PIL_Tk_img) # append it to Wallpaper_pic list
             img_x += 100 # Change x Pos
