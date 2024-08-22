@@ -29,6 +29,7 @@ def debug(mode, name, log):
 # Main
 class Main:
     def __init__(self):
+
         # Create Some Vars, they will be use later in the functions
         self.Canvas_height = 0
         self.main_frame = None
@@ -52,7 +53,7 @@ class Main:
         self.root = tk.Tk()  # Create Main Window
         self.root.geometry("930x732")  # Set Window's Size
         self.root.title("RePKG UI")  # Set Window's title
-        self.root.resizable(False, False)
+        self.root.resizable(False,True)
         self.check_file_and_path()  # Check If file exits
         # Load UI
         self.main_ui()
@@ -63,7 +64,10 @@ class Main:
         Sum the height that Canvas need
         """
         Wallpapers_num = len(self.WallPaper_info)
-        Wallpapers_col = Wallpapers_num // 9
+        if Wallpapers_num % 9 == 0:
+            Wallpapers_col = Wallpapers_num // 9
+        else:
+            Wallpapers_col = Wallpapers_num // 9 + 1
         self.Canvas_height = Wallpapers_col * 100
         print(self.Canvas_height)
 
@@ -78,11 +82,11 @@ class Main:
         """
         self.main_canvas = tk.Canvas(self.main_frame, width=930, height=self.Canvas_height)
         self.main_canvas.configure(highlightthickness=0)
-        self.main_canvas.pack(fill='both', expand=True)
 
         self.scrollbar = tk.Scrollbar(
-            self.main_canvas, orient=tk.VERTICAL)
+            self.main_frame, orient=tk.VERTICAL)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.main_canvas.pack(fill='both', expand=True)
         self.main_canvas.configure(yscrollcommand=self.scrollbar.set, yscrollincrement=10, scrollregion=(0, 0, 930, self.Canvas_height))
         self.scrollbar.configure(command=self.main_canvas.yview)
         img_x = 0 # Set the x pos
@@ -96,12 +100,13 @@ class Main:
             PIL_Tk_img = ImageTk.PhotoImage(PIL_img.resize((100,100))) # Use ImageTk to show the pic
             self.PIL_img_Tk_list.append(PIL_Tk_img)
             Wallpaper_pic = tk.Button(self.main_canvas, image=PIL_Tk_img)  # Create the label
-            Wallpaper_pic.place(x=img_x,y=img_y)
-            self.labels_wallpapers_pic.append(PIL_Tk_img) # append it to Wallpaper_pic list
+            self.main_canvas.create_window((img_x,img_y),window=Wallpaper_pic,anchor="nw",tags="button")
+            self.labels_wallpapers_pic.append(Wallpaper_pic) # append it to Wallpaper_pic list
             img_x += 100 # Change x Pos
             if count % 9 == 0: # If The Column was full, Change a Column
                 img_y += 100
                 img_x = 0
+        
     def check_file_and_path(self):
         """
         Check if the output Folder or RePKG.exe exist
