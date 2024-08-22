@@ -30,9 +30,10 @@ def debug(mode, name, log):
 class Main:
     def __init__(self):
         # Create Some Vars, they will be use later in the functions
+        self.Canvas_height = 0
         self.main_frame = None
         self.scrollbar = None
-        self.WallPaper_info = None
+        self.WallPaper_info = {}
         self.jsonlist = None
         self.button_start = None
         self.entry_PKGfile_path = None
@@ -40,46 +41,50 @@ class Main:
         self.main_canvas = None
         self.PIL_img_Tk_list = []
         self.labels_wallpapers_pic = [] # The labels of the pictures
-        self.work_path = os.getcwd()  # Get Work Path
+        self.work_path = os.path.dirname(os.path.realpath(sys.argv[0]))  # Get Work Path
         self.RePKG_path = r".\RePKG.exe"
         self.All_WallPaper_Path = ""
         self.get_wallpaper_path()  #
         self.output_path = self.work_path + r".\output"  # Output File Path
         self.get_filelist()
         self.get_wallpaper_info()
+        self.get_canvas_height()
         self.root = tk.Tk()  # Create Main Window
-        self.root.geometry("940x732")  # Set Window's Size
+        self.root.geometry("930x732")  # Set Window's Size
         self.root.title("RePKG UI")  # Set Window's title
         self.root.resizable(False, False)
         self.check_file_and_path()  # Check If file exits
         # Load UI
         self.main_ui()
-        self.place_labels()
 
         self.root.mainloop()  # Show the Window
+    def get_canvas_height(self):
+        """
+        Sum the height that Canvas need
+        """
+        Wallpapers_num = len(self.WallPaper_info)
+        Wallpapers_col = Wallpapers_num // 9
+        self.Canvas_height = Wallpapers_col * 100
+        print(self.Canvas_height)
+
 
     def __str__(self):
         return self.entry_PKGfile_path.get()
 
+
     def main_ui(self):
         """
-        Main UI of the application
+        Show the preview Image of the Wallpapers
         """
-        self.main_canvas = tk.Canvas(self.main_frame, width=920, height=732)
+        self.main_canvas = tk.Canvas(self.main_frame, width=930, height=self.Canvas_height)
         self.main_canvas.configure(highlightthickness=0)
         self.main_canvas.pack(fill='both', expand=True)
 
         self.scrollbar = tk.Scrollbar(
             self.main_canvas, orient=tk.VERTICAL)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.main_canvas.configure(yscrollcommand=self.scrollbar.set)
+        self.main_canvas.configure(yscrollcommand=self.scrollbar.set, yscrollincrement=10, scrollregion=(0, 0, 930, self.Canvas_height))
         self.scrollbar.configure(command=self.main_canvas.yview)
-
-
-    def place_labels(self):
-        """
-        Show the preview Image of the Wallpapers
-        """
         img_x = 0 # Set the x pos
         img_y = 0 # Set the y pos
         count = 0
