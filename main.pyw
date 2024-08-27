@@ -12,18 +12,8 @@ import threading
 import tkinter.simpledialog
 import winreg
 from PIL import Image, ImageTk
-
-
+from loguru import logger
 # Debug Func
-def debug(mode, name, log):
-    """
-    Print sth. to Console
-    Args:
-        mode: Debug mode
-        name: The name of the output things
-        log: The data
-    """
-    print("[" + mode + "]:" + name + ":" + log)
 
 
 # Main
@@ -41,21 +31,20 @@ class Main:
         self.text_file_path = None
         self.main_canvas = None
         self.PIL_img_Tk_list = []
+        self.All_WallPaper_Path = ""
         self.labels_wallpapers_pic = [] # The labels of the pictures
         self.work_path = os.path.dirname(os.path.realpath(sys.argv[0]))  # Get Work Path
-        self.RePKG_path = r".\RePKG.exe"
-        self.All_WallPaper_Path = ""
+        self.RePKG_path = r".\RePKG.exe" # The path of the RePKG.exe
         self.get_wallpaper_path()  #
         self.output_path = self.work_path + r".\output"  # Output File Path
-        self.get_filelist()
-        self.get_wallpaper_info()
-        self.get_canvas_height()
+        self.get_json_filelist() # Get the all json files
+        self.get_wallpaper_info() # Get the info of the wallpapers
+        self.get_canvas_height() # Sum the height that Canvas window needs
         self.root = tk.Tk()  # Create Main Window
         self.root.geometry("930x732")  # Set Window's Size
         self.root.title("RePKG UI")  # Set Window's title
         self.root.resizable(False,True)
         self.check_file_and_path()  # Check If file exits
-        # Load UI
         self.main_ui()
 
         self.root.mainloop()  # Show the Window
@@ -95,11 +84,11 @@ class Main:
 
         for Wallpaper_info_k, Wallpaper_info_v in self.WallPaper_info.items():
             count += 1
-
             PIL_img = Image.open(Wallpaper_info_v.get('Wallpaper_preview_file')) # Open the preview pic
             PIL_Tk_img = ImageTk.PhotoImage(PIL_img.resize((100,100))) # Use ImageTk to show the pic
             self.PIL_img_Tk_list.append(PIL_Tk_img)
             Wallpaper_pic = tk.Button(self.main_canvas, image=PIL_Tk_img)  # Create the label
+            Wallpaper_pic.configure(command=lambda: self.show_wallpaper_info(Wallpaper_info_k))
             self.main_canvas.create_window((img_x,img_y),window=Wallpaper_pic,anchor="nw",tags="button")
             self.labels_wallpapers_pic.append(Wallpaper_pic) # append it to Wallpaper_pic list
             img_x += 100 # Change x Pos
@@ -195,7 +184,7 @@ class Main:
         RunThread = threading.Thread(target=self.start)
         RunThread.run()
 
-    def get_filelist(self):
+    def get_json_filelist(self):
         """
         Get the json file
         """
@@ -229,9 +218,6 @@ class Main:
             wallpaper_info_in_if["Wallpaper_title"] = json_data.get(
                 "title"
             )  # Get the name of the wallpaper
-            wallpaper_info_in_if["Wallpaper_contentrating"] = json_data.get(
-                "contentrating"
-            )  # Get the contentrating of the wallpaper
             wallpaper_info_in_if['Wallpaper_preview_file'] = wallpaper_path + '\\' + json_data.get("preview")
             wallpaper_info_in_if['Wallpaper_type'] = json_data.get("type")
             self.WallPaper_info[
@@ -239,6 +225,26 @@ class Main:
             ] = wallpaper_info_in_if  # Create a Key_Value to Storage the info
 
         print(self.WallPaper_info)
+    def show_wallpaper_info(self, wallpapername):
+        """
+        Args:
+            wallpapername: The path of the Wallpaper
+        Show the info of the wallpaper
+        """
+        wallpaper_info_window = tk.Toplevel() # Create the window of the wallpaper info
+        wallpaper_info_window.geometry('700x700') # Set the size
+        wallpaper_info_window.resizable(False,False) # Set the resizable
+        Wallpaper_info_data = self.WallPaper_info.get(wallpapername) # Get the info of the wallpaper
+        PIL_img = Image.open(Wallpaper_info_data.get('Wallpaper_preview_file'))  # Open the preview pic
+        PIL_Tk_img = ImageTk.PhotoImage(PIL_img.resize((300, 300)))  # Use ImageTk to show the pic
+        Wallpaper_pic = tk.Label(wallpaper_info_window, image=PIL_Tk_img)  # Create the label
+        Wallpaper_pic.place(x=205,y=20) # Create the picture
+        Wallpaper_info_title = Wallpaper_info_data.get("Wallpaper_title")
+        wallpapertitle_label = tk.Label(wallpaper_info_window, text=Wallpaper_info_title)
+        wallpapertitle_label.place(x=330,y=0)
+
+        wallpaper_info_window.mainloop()
+
 
 
 if __name__ == "__main__":
