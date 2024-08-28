@@ -241,7 +241,14 @@ class Main:
         Wallpaper_info_title = Wallpaper_info_data.get("Wallpaper_title")
         wallpapertitle_label = tk.Label(wallpaper_info_window, text=Wallpaper_info_title)
         wallpapertitle_label.place(x=330,y=0)
+        wallpapertype = Wallpaper_info_data.get("Wallpaper_type")
+        if wallpapertype == 'video':
+            wallpapertype = '视频'
+        elif wallpapertype == 'scene':
+            wallpapertype = '场景'
 
+        wallpapertype_label = tk.Label(wallpaper_info_window, text=f"类型:{wallpapertype}")
+        wallpapertype_label.place(x=330,y=390)
         wallpaper_info_window.mainloop()
 
 
