@@ -20,6 +20,7 @@ class Main:
     def __init__(self):
 
         # Create Some Vars, they will be use later in the functions
+        self.WallpaperTotal = 0
         self.Canvas_height = 0
         self.main_frame = None
         self.scrollbar = None
@@ -45,7 +46,7 @@ class Main:
         self.y = int(self.root.winfo_screenheight() / 2 - 732 / 2)
         # Set Window's Size
         self.root.wm_geometry(f"930x732+{self.x}+{self.y}")
-        self.root.wm_title("RePKG UI")  # Set Window's title
+        self.root.wm_title("Wallpaper Engine:壁纸引擎 第三方工具") # Set Window's title
         self.root.wm_resizable(False, True)
         self.check_file_and_path()  # Check If file exits
         self.main_ui()
@@ -60,11 +61,10 @@ class Main:
         """
         Sum the height that Canvas need
         """
-        Wallpapers_num = len(self.WallPaper_info)
-        if Wallpapers_num % 9 == 0:
-            Wallpapers_col = Wallpapers_num // 9
+        if self.WallpaperTotal % 9 == 0:
+            Wallpapers_col = self.WallpaperTotal // 9
         else:
-            Wallpapers_col = Wallpapers_num // 9 + 1
+            Wallpapers_col = self.WallpaperTotal // 9 + 1
         self.Canvas_height = Wallpapers_col * 100
         print(self.Canvas_height)
 
@@ -83,6 +83,7 @@ class Main:
         for filename in Filelist:
             if "project.json" in filename:
                 self.jsonlist.append(filename)
+        self.WallpaperTotal = len(self.jsonlist)
 
     def get_wallpaper_info(self):
         """
@@ -175,6 +176,7 @@ class Main:
                                    yscrollincrement=10, scrollregion=(0, 0, 930, self.Canvas_height))
         self.scrollbar.configure(command=self.main_canvas.yview)
         logger.info("滚动绑定成功")
+
 
         img_x = 0
         img_y = 0
@@ -294,7 +296,7 @@ class Main:
     def about(self):
         logger.info("查看关于信息")
         msg.showinfo(
-            '关于', '本程序制作者:MicGan & CodeCrafter-TL\n特别鸣谢:system-window\n版权声明:壁纸的版权归壁纸制作者所有，本程序仅供学习交流')
+            '关于', '本程序主要制作者:MicGan\n合作贡献者(排名不分先后):CodeCrafter-TL system-window\n版权声明:壁纸的版权归壁纸制作者所有，本程序仅供学习交流')
 
 
 if __name__ == "__main__":
