@@ -13,7 +13,6 @@ import tkinter.simpledialog
 import winreg
 from PIL import Image, ImageTk
 from loguru import logger
-# Debug Func
 
 
 # Main
@@ -127,7 +126,7 @@ class Main:
         # Add it to config_data
         self.All_WallPaper_Path = Wallpaper_path
 
-    def start(self):
+    def conversion(self):
         """
         Start conversion
         """
@@ -181,7 +180,7 @@ class Main:
         """
         Use Muti_thread to start Conversion
         """
-        RunThread = threading.Thread(target=self.start)
+        RunThread = threading.Thread(target=self.conversion)
         RunThread.run()
 
     def get_json_filelist(self):
@@ -248,8 +247,7 @@ class Main:
 
 
 if __name__ == "__main__":
-    Main()  # If Run In Main, Just GO!
+    logger.info("程序启动")
+    Main()  # If Run In Main, Just GO!    logger.info('程序退出')
 else:
-    tkinter.messagebox.showerror(
-        "错误", "请在主程序中运行"
-    )  # If not running in main, Warn the user and stop running
+    logger.warning('本程序正在作为第三方模块导入! 请注意相关变量的设置')
