@@ -10,7 +10,7 @@ import subprocess
 import json
 import threading
 import tkinter.simpledialog
-# import winreg
+import winreg
 from PIL import Image, ImageTk
 from loguru import logger
 
@@ -131,7 +131,7 @@ class Main:
         """
         Set WallPaper Path Config
         """
-        """# Use winreg to get Steam Install Folder
+        # Use winreg to get Steam Install Folder
         Steam_Install_Path_key = winreg.OpenKey(
             winreg.HKEY_CURRENT_USER, r"SoftWare\Valve\Steam"
         )
@@ -144,8 +144,7 @@ class Main:
         # Get Wallpaper Engine Workshop Folder
         Wallpaper_path = Steam_Path + r"\steamapps\workshop\content\431960"
         # Add it to config_data
-        self.All_WallPaper_Path = Wallpaper_path"""
-        self.All_WallPaper_Path = "./"
+        self.All_WallPaper_Path = Wallpaper_path
 
     # *--------------------------------UI Func--------------------------------* #
     def top_menu(self):
