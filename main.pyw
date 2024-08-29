@@ -8,9 +8,9 @@ import os
 import sys
 import subprocess
 import json
-import threading
-import tkinter.simpledialog
+import shutil
 import winreg
+
 from PIL import Image, ImageTk
 from loguru import logger
 
@@ -20,6 +20,7 @@ class Main:
     def __init__(self):
 
         # Create Some Vars, they will be use later in the functions
+        self.wallpaper_info_window = None
         self.WallpaperTotal = 0
         self.Canvas_height = 0
         self.main_frame = None
@@ -35,9 +36,9 @@ class Main:
         self.labels_wallpapers_pic = []  # The labels of the pictures
         self.work_path = os.path.dirname(
             os.path.realpath(sys.argv[0]))  # Get Work Path
-        self.RePKG_path = r"./RePKG.exe"  # The path of the RePKG.exe
+        self.RePKG_path = self.work_path + r"\RePKG.exe"  # The path of the RePKG.exe
         self.get_wallpaper_path()  #
-        self.output_path = self.work_path + r"/output"  # Output File Path
+        self.output_path = self.work_path + r"\output"  # Output File Path
         self.get_json_filelist()  # Get the all json files
         self.get_wallpaper_info()  # Get the info of the wallpapers
         self.get_canvas_height()  # Sum the height that Canvas window needs
@@ -109,6 +110,7 @@ class Main:
             wallpaper_info_in_if['Wallpaper_preview_file'] = wallpaper_path + \
                 '/' + json_data.get("preview")
             wallpaper_info_in_if['Wallpaper_type'] = json_data.get("type")
+
             self.WallPaper_info[0][
                 wallpaper_path
             ] = wallpaper_info_in_if  # Create a Key_Value to Storage the info
@@ -205,56 +207,96 @@ class Main:
             logger.info(f"为 {Wallpaper_info_k} 目录的壁纸创建按钮")
     # *------------------------------------Button Func---------------------------------------* #
 
-    def conversion(self):
+    def conversion_PKG(self, *args):
         """
+        Args:
+            *args:The Wallpapers need to conversion
         Start conversion
         """
-        PKG_file_path_str = self.__str__()  # Get the file's abs path
-        json_file = (
-            os.path.dirname(PKG_file_path_str.strip('"')) + r"/project.json"
-        )  # Get project.json File Path
-        with open(json_file, "r", encoding="utf-8") as file_data:  # Load the json file
-            json_data = json.load(file_data)
-        # Get the name of the wallpaper
-        Wallpaper_Name = json_data.get("title")
-        # Replace spacial string
-        Wallpaper_Name = Wallpaper_Name.replace(" ", "_")
-        Wallpaper_Name = Wallpaper_Name.replace(" ", "_")
-        Wallpaper_Name = Wallpaper_Name.replace("|", "_")
-        Wallpaper_Name = Wallpaper_Name.replace("*", "_")
-        Wallpaper_Name = Wallpaper_Name.replace(":", "_")
-        Wallpaper_Name = Wallpaper_Name.replace("<", "_")
-        Wallpaper_Name = Wallpaper_Name.replace(">", "_")
-        final_output_path = (
-            self.output_path + "\\" + Wallpaper_Name
-        )  # Use a var to storge Output Path(final)
-        command = (
-            self.RePKG_path
-            + " "
-            + "extract"
-            + " "
-            + PKG_file_path_str
-            + " "
-            + "-o"
-            + " "
-            + final_output_path
-        )  # The command of conversion
-        # Use subprocess.popen to run the command
-        result = subprocess.Popen(
-            command,
-            stdin=None,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
-        )
-        output_info_message = (
-            "终端输出如下:" + "\r" + str(result.communicate()[0].decode("gbk"))
-        )  # Use a Var Storage Output Information
-
-        msg.showinfo(
-            "运行结果", output_info_message
-        )  # Use a Window to tell User the output information
-
+        logger.info("进入解包函数")
+        suc = 0
+        fail = 0
+        for PKG_file_path_str in args:
+            PKG_file_path_str = PKG_file_path_str + r'\scene.pkg'
+            print(PKG_file_path_str)
+            json_file = (
+                os.path.dirname(PKG_file_path_str.strip('"')) + r"/project.json"
+            )  # Get project.json File Path
+            with open(json_file, "r", encoding="utf-8") as file_data:  # Load the json file
+                json_data = json.load(file_data)
+            # Get the name of the wallpaper
+            Wallpaper_Name = json_data.get("title")
+            # Replace spacial string
+            Wallpaper_Name = Wallpaper_Name.replace(" ", "_")
+            Wallpaper_Name = Wallpaper_Name.replace(" ", "_")
+            Wallpaper_Name = Wallpaper_Name.replace("|", "_")
+            Wallpaper_Name = Wallpaper_Name.replace("*", "_")
+            Wallpaper_Name = Wallpaper_Name.replace(":", "_")
+            Wallpaper_Name = Wallpaper_Name.replace("<", "_")
+            Wallpaper_Name = Wallpaper_Name.replace(">", "_")
+            final_output_path = (
+                self.output_path + "\\" + Wallpaper_Name
+            )  # Use a var to storge Output Path(final)
+            print(final_output_path)
+            command = (
+                self.RePKG_path
+                + " "
+                + "extract"
+                + " "
+                + PKG_file_path_str
+                + " "
+                + "-o"
+                + " "
+                + final_output_path
+            )  # The command of conversion
+            print(command)
+            # Use subprocess.popen to run the command
+            result = subprocess.Popen(
+                command,
+                stdin=None,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=True,
+            )
+            print(result.communicate()[0].decode("gbk"))
+            if 'Done' in str(result.communicate()[0].decode("gbk")):
+                suc += 1
+            else:
+                fail += 1
+        msg.showinfo('解包结果', f'成功解包 {suc} 个,失败 {fail} 个')
+    def copy_mp4(self, *args):
+        for MP4_path in args:
+            print(MP4_path)
+            all_files = os.listdir(MP4_path)
+            print(all_files)
+            mp4_file = ''
+            for i in all_files:
+                if i.endswith('.mp4'):
+                    mp4_file = MP4_path + f'\\{i}'
+                    break
+            print(mp4_file)
+            json_file = (
+                os.path.dirname(mp4_file.strip("'")) + r"/project.json"
+            )  # Get project.json File Path
+            with open(json_file, "r", encoding="utf-8") as file_data:  # Load the json file
+                json_data = json.load(file_data)
+            # Get the name of the wallpaper
+            Wallpaper_Name = json_data.get("title")
+            # Replace spacial string
+            Wallpaper_Name = Wallpaper_Name.replace(" ", "_")
+            Wallpaper_Name = Wallpaper_Name.replace(" ", "_")
+            Wallpaper_Name = Wallpaper_Name.replace("|", "_")
+            Wallpaper_Name = Wallpaper_Name.replace("*", "_")
+            Wallpaper_Name = Wallpaper_Name.replace(":", "_")
+            Wallpaper_Name = Wallpaper_Name.replace("<", "_")
+            Wallpaper_Name = Wallpaper_Name.replace(">", "_")
+            final_output_path = (
+                    self.output_path + "\\" + Wallpaper_Name
+            )  # Use a var to storge Output Path(final)
+            print(final_output_path)
+            if not os.path.isdir(final_output_path):
+                os.mkdir(final_output_path)
+            shutil.copy(mp4_file, final_output_path + f'\\{Wallpaper_Name}.mp4')
     def show_wallpaper_info(self, wallpapername):
         """
         Args:
@@ -262,38 +304,59 @@ class Main:
         Show the info of the wallpaper
         """
         logger.info(f"正在查看 {wallpapername} 目录下的壁纸信息")
-        wallpaper_info_window = tk.Toplevel(self.root)
+        self.wallpaper_info_window = tk.Tk() # Create a New Window
         x = int(self.root.winfo_x() + self.root.winfo_width() / 2 - 350)
         y = int(self.root.winfo_y() + self.root.winfo_height() / 2 - 350)
-        wallpaper_info_window.wm_geometry(f'700x700+{x}+{y}')
-        wallpaper_info_window.wm_resizable(False, False)
-        wallpaper_info_window.wm_attributes('-topmost', True)
+        self.wallpaper_info_window.wm_geometry(f'700x700+{x}+{y}') # Set the Size of the window
+        self.wallpaper_info_window.wm_resizable(False, False) # Set Resizeable
+        #self.wallpaper_info_window.wm_attributes('-topmost', True)
 
-        Wallpaper_info_data = self.WallPaper_info[0].get(wallpapername)
+        Wallpaper_info_data = self.WallPaper_info[0].get(wallpapername) # Try to get the info of the wallpaper
+        # If can not find, Tell the user
         if not Wallpaper_info_data:
             msg.showerror("错误", "无法找到壁纸信息")
-            return
-
+            logger.error(f'无法找到{wallpapername}的壁纸信息')
+            return 0
+        # Open the image
         PIL_img = Image.open(Wallpaper_info_data.get('Wallpaper_preview_file'))
-        PIL_Tk_img = ImageTk.PhotoImage(PIL_img.resize((300, 300)))
+        PIL_Tk_img = ImageTk.PhotoImage(PIL_img.resize((300, 300)), master=self.wallpaper_info_window)
 
-        Wallpaper_pic = tk.Label(wallpaper_info_window, image=PIL_Tk_img)
-        Wallpaper_pic.place(x=205, y=20)
+        Wallpaper_pic = tk.Label(self.wallpaper_info_window, image=PIL_Tk_img)
+        Wallpaper_pic.place(x=205, y=30)
+        # Get the title and place it
         Wallpaper_info_title = Wallpaper_info_data.get("Wallpaper_title")
+        self.wallpaper_info_window.title(f'{Wallpaper_info_title}的详细信息') # Set the title of the Window
         wallpapertitle_label = tk.Label(
-            wallpaper_info_window, text=Wallpaper_info_title)
-        wallpapertitle_label.place(x=330, y=0)
+            self.wallpaper_info_window, text=Wallpaper_info_title)
+        wallpapertitle_label.pack()
+        wallpapertitle_label.configure(justify=tk.CENTER, anchor=tk.CENTER) # Set Text place
+        # Get the type of the wallpaper and place it
         wallpapertype = Wallpaper_info_data.get("Wallpaper_type")
-        wallpapertype = '视频' if wallpapertype == 'video' else '场景'
+        # Transfer English to Chinese
+        if wallpapertype.lower() == 'video':
+            wallpapertype = '视频'
+        elif wallpapertype.lower() == 'scene':
+            wallpapertype = '场景'
         wallpapertype_label = tk.Label(
-            wallpaper_info_window, text=f"类型: {wallpapertype}")
+            self.wallpaper_info_window, text=f"类型: {wallpapertype}")
         wallpapertype_label.place(x=330, y=390)
 
         Wallpaper_pic.image = PIL_Tk_img
+        # If it is Scene Wallpaper, Show the conversion button
+        if wallpapertype == '场景':
+            conver_button = tk.Button(self.wallpaper_info_window, text='开始导出', command=lambda : self.conversion_PKG(wallpapername))
+            conver_button.place(x=330, y=420)
+        elif wallpapertype == '视频':
+            copy_button = tk.Button(self.wallpaper_info_window, text='开始导出',  command=lambda : self.copy_mp4(wallpapername))
+            copy_button.place(x=330, y=420)
+        self.wallpaper_info_window.mainloop() # Show the Window
 
-        wallpaper_info_window.mainloop()
 
     def about(self):
+        """
+            The About Page
+        :return:
+        """
         logger.info("查看关于信息")
         msg.showinfo(
             '关于', '本程序主要制作者:MicGan\n合作贡献者(排名不分先后):CodeCrafter-TL system-window\n版权声明:壁纸的版权归壁纸制作者所有，本程序仅供学习交流')
