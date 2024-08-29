@@ -36,3 +36,4 @@
 1. RePKG.exe不是本仓库所有者开发的,  它的仓库 *[在这](https://github.com/notscuffed/repkg)*,记得给它个Star
 2. 导出的壁纸版权归壁纸创作者所有，本程序仅供学习交流使用。
 3. 本程序采用GPL-V3开源，请遵守该开源协议
+4. 本项目的workflow与issue模板均参考[gyc-123456-1的pynotepad项目](https://github.com/gyc123456-1/pynotepad)
