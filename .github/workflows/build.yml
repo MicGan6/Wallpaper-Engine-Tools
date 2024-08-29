@@ -12,7 +12,9 @@ jobs:
       - name: 结算仓库
         uses: actions/checkout@v2
       - name: 安装依赖
-        run: pip install loguru
+        run: |
+          pip install loguru
+          pip install pillow
       - name: 编译程序
         run: |
           pip install pyinstaller
