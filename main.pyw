@@ -11,13 +11,14 @@ import json
 import shutil
 import winreg
 
-from PIL import Image, ImageTk
+
 try:
+    from PIL import Image, ImageTk
     from loguru import logger
 except ModuleNotFoundError:
     msg.showwarning('警告', '无法找到第三方库,即将开始尝试自动安装')
     result = subprocess.Popen(
-        'pip install -i https://pypi.tuna.tsinghua.edu.cn/simple loguru',
+        'pip install -i https://pypi.tuna.tsinghua.edu.cn/simple loguru, pillow',
         stdin=None,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
