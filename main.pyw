@@ -1,5 +1,5 @@
 # -*-Config:UTF-8-*-
-# MicGan-RePKG_Python_UI
+# MicGan-Wallpaper Engine Tool
 # | By : MicGan    |
 # Import modules
 import tkinter as tk
