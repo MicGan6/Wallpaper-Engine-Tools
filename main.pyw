@@ -11,10 +11,11 @@ import json
 import shutil
 import winreg
 
-
+# Try to import Third-Party modules
 try:
     from PIL import Image, ImageTk
     from loguru import logger
+# If the mudules were not installed, Try to install them
 except ModuleNotFoundError:
     msg.showwarning('警告', '无法找到第三方库,即将开始尝试自动安装')
     result = subprocess.Popen(
@@ -24,11 +25,13 @@ except ModuleNotFoundError:
         stderr=subprocess.PIPE,
         shell=True,
     )
+    # If success, Tell the user to restart the app
     if 'Successfully' in result.communicate()[0].decode("gbk"):
         msg.showinfo('提示', '安装完成，请重新启动程序')
+    # If not, tell user to install modules by themselves
     else:
         msg.showerror('错误', '安装失败, 请在cmd中手动输入\npip install -i https://pypi.tuna.tsinghua.edu.cn/simple loguru')
-    sys.exit()
+    sys.exit() # Exit
 
 
 # Main
@@ -53,7 +56,7 @@ class Main:
         self.labels_wallpapers_pic = []  # The labels of the pictures
         self.work_path = os.path.dirname(os.path.realpath(sys.argv[0]))  # Get Work Path
         self.RePKG_path = self.work_path + r"\RePKG.exe"  # The path of the RePKG.exe
-        self.get_wallpaper_path()  #
+        self.get_wallpaper_path()  # Get the path of the wallpaper
         self.output_path = self.work_path + r"\output"  # Output File Path
         self.get_json_filelist()  # Get the all json files
         self.get_wallpaper_info()  # Get the info of the wallpapers
@@ -66,12 +69,10 @@ class Main:
         self.root.wm_title("Wallpaper Engine:壁纸引擎 第三方工具")  # Set Window's title
         self.root.wm_resizable(False, True)
         self.check_file_and_path()  # Check If file exits
+        # Setup UI
         self.main_ui()
         self.top_menu()
         self.root.mainloop()  # Show the Window
-
-    def __str__(self):
-        return self.entry_PKGfile_path.get()
 
     # *----------------------------------- Prepare Func--------------------------------------* #
 
@@ -84,7 +85,7 @@ class Main:
         else:
             Wallpapers_col = self.WallpaperTotal // 9 + 1
         self.Canvas_height = Wallpapers_col * 100
-        print(self.Canvas_height)
+        logger.info(f'画布高度{self.Canvas_height}')
 
     def get_json_filelist(self):
         """
@@ -130,8 +131,6 @@ class Main:
                 wallpaper_path
             ] = wallpaper_info_in_if  # Create a Key_Value to Storage the info
 
-        print(self.WallPaper_info)
-
     def check_file_and_path(self):
         """
         Check if the output Folder or RePKG.exe exist
@@ -171,7 +170,7 @@ class Main:
         """
         main_menu = tk.Menu(self.root)
         son_menu = tk.Menu(main_menu)
-        main_menu.add_cascade(label="配置", menu=son_menu)
+        main_menu.add_cascade(label="选项", menu=son_menu)
         son_menu.add_command(label="关于", command=self.about)
         son_menu.add_command(label="退出", command=self.root.quit)
         self.root.configure(menu=main_menu)
@@ -278,6 +277,7 @@ class Main:
                 stderr=subprocess.PIPE,
                 shell=True,
             )
+            logger.info(result)
             print(result.communicate()[0].decode("gbk"))
             if "Done" in str(result.communicate()[0].decode("gbk")):
                 suc += 1
@@ -288,16 +288,16 @@ class Main:
     def copy_mp4(self, *args):
 
         for MP4_path in args:
-            print(MP4_path)
+            logger.info(f'壁纸所在目录: {MP4_path}')
             all_files = os.listdir(MP4_path)
-            print(all_files)
+            logger.info(f'目录下所有文件{all_files}')
             mp4_file = ""
             # Find the mp4 file
             for i in all_files:
                 if i.endswith(".mp4"):
                     mp4_file = MP4_path + f"\\{i}"
                     break
-            print(mp4_file)
+            logger.info(f'MP4文件所在位置{mp4_file}')
             json_file = (
                 os.path.dirname(mp4_file.strip("'")) + r"/project.json"
             )  # Get project.json File Path
@@ -318,7 +318,7 @@ class Main:
             final_output_path = (
                 self.output_path + "\\" + Wallpaper_Name
             )  # Use a var to storge Output Path(final)
-            print(final_output_path)
+            logger.info(f'文件输出位置{final_output_path}')
             if not os.path.isdir(final_output_path): # If the output path didn't exist, Create it
                 os.mkdir(final_output_path)
             shutil.copy(mp4_file, final_output_path + f"\\{Wallpaper_Name}.mp4")
