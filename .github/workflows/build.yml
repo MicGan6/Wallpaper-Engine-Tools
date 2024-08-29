@@ -17,6 +17,9 @@ jobs:
         run: |
           pip install pyinstaller
           pyinstaller main.spec
+      - name: 复制资源文件
+        run: |
+          xcopy .\RePKG.exe .\dist\WPE-Tools\RePKG.exe /s /e
       - name: 上传打包项目
         uses: actions/upload-artifact@v4
         with:
