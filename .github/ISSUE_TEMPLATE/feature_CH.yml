@@ -19,12 +19,18 @@ body:
   id: "What"
   attributes:
     label: "请概括你要的功能"
+  validations:
+    required: true
 - type: textarea
   id: "What2"
   attributes:
     label: "你想要的新功能(详细)"
+  validations:
+    required: true
 - type: textarea
   id: "Why"
   attributes:
     label: "你为何要这个新功能"
     placeholder: "这个功能能带给我xxxxx的便利,如果没有，就xxxxxxxxx.......(后面请自行脑补)"
+  validations:
+    required: true
