@@ -13,11 +13,13 @@ import winreg
 
 # Try to import Third-Party modules
 try:
+    from modules import tools
+
     from PIL import Image, ImageTk
     from loguru import logger
 # If the mudules were not installed, Try to install them
 except ModuleNotFoundError:
-    msg.showwarning('警告', '无法找到第三方库,即将开始尝试自动安装')
+    msg.showwarning("警告", "无法找到第三方库,即将开始尝试自动安装")
     result = subprocess.Popen(
         'pip install -i https://pypi.tuna.tsinghua.edu.cn/simple loguru, pillow',
         stdin=None,
@@ -25,13 +27,17 @@ except ModuleNotFoundError:
         stderr=subprocess.PIPE,
         shell=True,
     )
+    print(result.communicate()[0].decode("gbk"))
     # If success, Tell the user to restart the app
-    if 'Successfully' in result.communicate()[0].decode("gbk"):
-        msg.showinfo('提示', '安装完成，请重新启动程序')
+    if "Successfully" in result.communicate()[0].decode("gbk"):
+        msg.showinfo("提示", "安装完成，请重新启动程序")
     # If not, tell user to install modules by themselves
     else:
-        msg.showerror('错误', '安装失败, 请在cmd中手动输入\npip install -i https://pypi.tuna.tsinghua.edu.cn/simple loguru')
-    sys.exit() # Exit
+        msg.showerror(
+            "错误",
+            "安装失败, 请在cmd中手动输入\npip install -i https://pypi.tuna.tsinghua.edu.cn/simple loguru",
+        )
+    sys.exit()  # Exit
 
 
 # Main
@@ -39,7 +45,7 @@ class Main:
     def __init__(self):
 
         # Create Some Vars, they will be use later in the functions
-        self.Wallpaper_pic = None
+        self.wallpaper_pic = None
         self.wallpaper_info_window = None
         self.WallpaperTotal = 0
         self.Canvas_height = 0
@@ -55,7 +61,9 @@ class Main:
         self.All_WallPaper_Path = ""
         self.labels_wallpapers_pic = []  # The labels of the pictures
         self.work_path = os.path.dirname(os.path.realpath(sys.argv[0]))  # Get Work Path
-        self.RePKG_path = self.work_path + r"\RePKG.exe"  # The path of the RePKG.exe
+        self.RePKG_path = (
+            self.work_path + r"\modules\RePKG.exe"
+        )  # The path of the RePKG.exe
         self.get_wallpaper_path()  # Get the path of the wallpaper
         self.output_path = self.work_path + r"\output"  # Output File Path
         self.get_json_filelist()  # Get the all json files
@@ -85,7 +93,7 @@ class Main:
         else:
             Wallpapers_col = self.WallpaperTotal // 9 + 1
         self.Canvas_height = Wallpapers_col * 100
-        logger.info(f'画布高度{self.Canvas_height}')
+        logger.info(f"画布高度{self.Canvas_height}")
 
     def get_json_filelist(self):
         """
@@ -148,20 +156,25 @@ class Main:
         """
         Set WallPaper Path Config
         """
-        # Use winreg to get Steam Install Folder
-        Steam_Install_Path_key = winreg.OpenKey(
-            winreg.HKEY_CURRENT_USER, r"SoftWare\Valve\Steam"
-        )
-        Steam_Install_Path_Value = winreg.QueryValueEx(
-            Steam_Install_Path_key, "SteamPath"
-        )
-        Steam_Path = Steam_Install_Path_Value[0]
-        # replace '\'
-        Steam_Path = Steam_Path.replace("/", "\\")
-        # Get Wallpaper Engine Workshop Folder
-        Wallpaper_path = Steam_Path + r"\steamapps\workshop\content\431960"
-        # Add it to config_data
-        self.All_WallPaper_Path = Wallpaper_path
+        try:
+            # Use winreg to get Steam Install Folder
+            Steam_Install_Path_key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER, r"SoftWare\Valve\Steam"
+            )
+            Steam_Install_Path_Value = winreg.QueryValueEx(
+                Steam_Install_Path_key, "SteamPath"
+            )            
+        except FileNotFoundError:
+            msg.showerror('错误', '请检查是否安装Wallpaper Engine')
+            sys.exit()    
+        else:            
+            Steam_Path = Steam_Install_Path_Value[0]
+            # replace '\'
+            Steam_Path = Steam_Path.replace("/", "\\")
+            # Get Wallpaper Engine Workshop Folder
+            Wallpaper_path = Steam_Path + r"\steamapps\workshop\content\431960"
+            # Add it to config_data
+            self.All_WallPaper_Path = Wallpaper_path
 
     # *--------------------------------UI Func--------------------------------* #
     def top_menu(self):
@@ -172,6 +185,7 @@ class Main:
         son_menu = tk.Menu(main_menu)
         main_menu.add_cascade(label="选项", menu=son_menu)
         son_menu.add_command(label="关于", command=self.about)
+        son_menu.add_command(label="批量导出")
         son_menu.add_command(label="退出", command=self.root.quit)
         self.root.configure(menu=main_menu)
 
@@ -206,16 +220,16 @@ class Main:
             PIL_img = Image.open(Wallpaper_info_v.get("Wallpaper_preview_file"))
             PIL_Tk_img = ImageTk.PhotoImage(PIL_img.resize((100, 100)))
             self.PIL_img_Tk_list.append(PIL_Tk_img)
-            self.Wallpaper_pic = tk.Button(
+            self.wallpaper_pic = tk.Button(
                 self.main_canvas,
                 image=PIL_Tk_img,
                 relief="flat",
-                command=lambda wp=Wallpaper_info_k: self.show_wallpaper_info(wp),
+                command=lambda wp=Wallpaper_info_k: self.Showwallpaperinfo(wp),
             )
             self.main_canvas.create_window(
-                (img_x, img_y), window=self.Wallpaper_pic, anchor="nw", tags="button"
+                (img_x, img_y), window=self.wallpaper_pic, anchor="nw", tags="button"
             )
-            self.labels_wallpapers_pic.append(self.Wallpaper_pic)
+            self.labels_wallpapers_pic.append(self.wallpaper_pic)
             img_x += 100
             if count % 9 == 0:
                 img_y += 100
@@ -223,6 +237,11 @@ class Main:
             logger.info(f"为 {Wallpaper_info_k} 目录的壁纸创建按钮")
 
     # *------------------------------------Button Func---------------------------------------* #
+    def search(self):
+        pass
+
+    def muti_output(self):
+        pass
 
     def conversion_pkg(self, *args):
         """
@@ -288,16 +307,16 @@ class Main:
     def copy_mp4(self, *args):
 
         for MP4_path in args:
-            logger.info(f'壁纸所在目录: {MP4_path}')
+            logger.info(f"壁纸所在目录: {MP4_path}")
             all_files = os.listdir(MP4_path)
-            logger.info(f'目录下所有文件{all_files}')
+            logger.info(f"目录下所有文件{all_files}")
             mp4_file = ""
             # Find the mp4 file
             for i in all_files:
                 if i.endswith(".mp4"):
                     mp4_file = MP4_path + f"\\{i}"
                     break
-            logger.info(f'MP4文件所在位置{mp4_file}')
+            logger.info(f"MP4文件所在位置{mp4_file}")
             json_file = (
                 os.path.dirname(mp4_file.strip("'")) + r"/project.json"
             )  # Get project.json File Path
@@ -318,13 +337,15 @@ class Main:
             final_output_path = (
                 self.output_path + "\\" + Wallpaper_Name
             )  # Use a var to storge Output Path(final)
-            logger.info(f'文件输出位置{final_output_path}')
-            if not os.path.isdir(final_output_path): # If the output path didn't exist, Create it
+            logger.info(f"文件输出位置{final_output_path}")
+            if not os.path.isdir(
+                final_output_path
+            ):  # If the output path didn't exist, Create it
                 os.mkdir(final_output_path)
             shutil.copy(mp4_file, final_output_path + f"\\{Wallpaper_Name}.mp4")
-        msg.showinfo('提示', '解包完成')
+        msg.showinfo("提示", "解包完成")
 
-    def show_wallpaper_info(self, wallpapername):
+    def Showwallpaperinfo(self, wallpapername):
         """
         Args:
             wallpapername: The path of the Wallpaper
@@ -354,15 +375,15 @@ class Main:
             PIL_img.resize((300, 300)), master=self.wallpaper_info_window
         )
 
-        Wallpaper_pic = tk.Label(self.wallpaper_info_window, image=PIL_Tk_img)
-        Wallpaper_pic.place(x=205, y=30)
+        wallpaper_pic = tk.Label(self.wallpaper_info_window, image=PIL_Tk_img)
+        wallpaper_pic.place(x=205, y=30)
         # Get the title and place it
-        Wallpaper_info_title = Wallpaper_info_data.get("Wallpaper_title")
+        wallpaper_info_title = Wallpaper_info_data.get("Wallpaper_title")
         self.wallpaper_info_window.title(
-            f"{Wallpaper_info_title}的详细信息"
+            f"{wallpaper_info_title}的详细信息"
         )  # Set the title of the Window
         wallpapertitle_label = tk.Label(
-            self.wallpaper_info_window, text=Wallpaper_info_title
+            self.wallpaper_info_window, text=wallpaper_info_title
         )
         wallpapertitle_label.pack()
         wallpapertitle_label.configure(
@@ -380,13 +401,15 @@ class Main:
         )
         wallpapertype_label.place(x=330, y=390)
 
-        Wallpaper_pic.image = PIL_Tk_img
+        wallpaper_pic.image = PIL_Tk_img
         # If it is Scene Wallpaper, Show the conversion button
         if wallpapertype == "场景":
             conver_button = tk.Button(
                 self.wallpaper_info_window,
                 text="开始导出",
-                command=lambda: self.conversion_pkg(wallpapername),
+                command=lambda: tools.ButtonCommand.ConversionPKG(
+                    self.output_path, self.RePKG_path, wallpapername
+                ),
             )
             conver_button.place(x=330, y=420)
         elif wallpapertype == "视频":
@@ -401,7 +424,7 @@ class Main:
     @staticmethod
     def about():
         """
-            The About Page
+        The About Page
         """
         logger.info("查看关于信息")
         msg.showinfo(
