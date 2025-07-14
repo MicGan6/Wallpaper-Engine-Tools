@@ -1,5 +1,8 @@
 > [!WARNING]
 > 由于本项目代码可读性过差，开发者已不再维护，请前往重构版项目[**WPETool**](https://github.com/MicGan6/WPETool)
+
+> [!WARNING]
+> Due to the poor readability of the code of this project, the developer no longer maintains it, please go to the refactored version of the project [**WPETool**](https://github.com/MicGan6/WPETool)
 # Wallpaper Engine:壁纸引擎 第三方工具
 将Wallpaper Engine: 壁纸引擎的壁纸进行导出
 ## 使用方法
